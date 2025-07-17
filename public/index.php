@@ -6,6 +6,9 @@ use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 
+use Doctrine\ORM\EntityManager;
+use App\Entities\User;
+
 $app = require_once __DIR__ . '/../bootstrap/application.php';
 
 $middleware = function (Request $req, RequestHandler $reqHandler) {
@@ -13,20 +16,20 @@ $middleware = function (Request $req, RequestHandler $reqHandler) {
     return $res;
 };
 
-$app->get('/{name}', function (Response $response, $name) use ($connection) {
+/**
+ * @var EntityManager $entityManager
+ */
+$app->get('/{name}', function (Response $response, $name) use ($entityManager) {
 
-    $stmt = $connection->prepare('SELECT * FROM users WHERE username = :username');
-    $stmt->bindValue(':username', $name);
-    $stmt = $stmt->executeQuery();
-    $result = $stmt->fetchAssociative();
+    $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $name]);
 
-    if (!$result) {
+    if (!$user) {
         $response->getBody()->write('There is no such profile');
         return $response;
     }
 
     $response->getBody()->write("Welcome on profile $name <br>");
-    $response->getBody()->write(json_encode($result));
+    $response->getBody()->write(json_encode($user->getData()));
 
     return $response;
 })->add($middleware);
