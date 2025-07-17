@@ -3,6 +3,7 @@
 declare(strict_types = 1);
 
 use Doctrine\DBAL\DriverManager;
+use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\ORMSetup;
 
 require_once __DIR__ . '/config.php';
@@ -19,4 +20,4 @@ $connection = DriverManager::getConnection([
     'password' => $_ENV['DATABASE_PASSWORD'],
 ], $config);
 
-return $connection;
+$entityManager = new EntityManager($connection, $config);
