@@ -9,7 +9,11 @@ use Slim\Psr7\Response as SlimResponse;
 
 require_once __DIR__ . '/database.php';
 
-$app = \DI\Bridge\Slim\Bridge::create();
+$containerBuilder = new DI\ContainerBuilder();
+$containerBuilder->addDefinitions(APP_PATH . '/bootstrap/container.php');
+$container = $containerBuilder->build();
+
+$app = \DI\Bridge\Slim\Bridge::create($container);
 $app->addRoutingMiddleware();
 
 $errorMiddleware = $app->addErrorMiddleware(

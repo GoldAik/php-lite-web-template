@@ -9,6 +9,9 @@ use Psr\Http\Server\RequestHandlerInterface as RequestHandler;
 use Doctrine\ORM\EntityManager;
 use App\Entities\User;
 
+/**
+ * @var Slim\App $app
+ */
 $app = require_once __DIR__ . '/../bootstrap/application.php';
 
 $middleware = function (Request $req, RequestHandler $reqHandler) {
@@ -19,7 +22,7 @@ $middleware = function (Request $req, RequestHandler $reqHandler) {
 /**
  * @var EntityManager $entityManager
  */
-$app->get('/{name}', function (Response $response, $name) use ($entityManager) {
+$app->get('/profile/{name}', function (Response $response, $name) use ($entityManager) {
 
     $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $name]);
 
@@ -33,5 +36,26 @@ $app->get('/{name}', function (Response $response, $name) use ($entityManager) {
 
     return $response;
 })->add($middleware);
+
+
+$app->get('/profile/{name}/delete', function (Response $response, $name) use ($entityManager) {
+
+    $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $name]);
+
+    if (!$user) {
+        $response->getBody()->write('There is no such profile');
+        return $response;
+    }
+
+    $entityManager->remove($user);
+    $entityManager->flush();
+
+    $response->getBody()->write("Profile was remove");
+    $response->getBody()->write(json_encode($user->getData()));
+
+    return $response;
+})  ->setName('delete-profile')
+    ->add(App\Middlewares\TokenMiddleware::class)    
+    ;
 
 $app->run();
