@@ -58,4 +58,7 @@ $app->get('/profile/{name}/delete', function (Response $response, $name) use ($e
     ->add(App\Middlewares\TokenMiddleware::class)    
     ;
 
+$routeCollector = $app->getRouteCollector();
+$routeCollector->setCacheFile(CACHE_PATH . '/routes.file');
+
 $app->run();

@@ -6,6 +6,7 @@ define('DEBUG_MODE', true);
 define('APP_PATH', __DIR__ . '/..');
 define('SOURCE_PATH', __DIR__ . '/../src');
 define('ENTITY_PATH', SOURCE_PATH . '/entity');
+define('CACHE_PATH', APP_PATH . '/_cache');
 
 use Dotenv\Dotenv;
 
