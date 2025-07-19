@@ -6,9 +6,8 @@ namespace App\Routes;
 
 use Doctrine\ORM\EntityManager;
 
-$userRoutes = require_once 'user.php';
 
-return function (\Slim\App $app, $args = []) use ($userRoutes) {
+return function (\Slim\App $app, $args = []) {
     $enityManager = $args['entity_manager'] ?? null;
     if ($enityManager instanceof EntityManager) 
     {
@@ -17,7 +16,7 @@ return function (\Slim\App $app, $args = []) use ($userRoutes) {
         /**
          * Declaring routes that need EntityManager 
          */
-        $userRoutes($app, $enityManager, $cleanArgs);
+        (require_once 'user.php')($app, $enityManager, $cleanArgs);
     }
 
     /**
