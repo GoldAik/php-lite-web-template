@@ -4,6 +4,10 @@ declare(strict_types = 1);
 
 namespace App\ErrorHandlers;
 
+use App\ErrorHandlers\DTO\HttpError;
+use App\ErrorHandlers\Enums\HttpErrorTypes;
+use App\ErrorHandlers\ErrorRenderer\ErrorRendererInterface;
+use App\ErrorHandlers\ErrorRenderer\JsonErrorRenderer;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpException;
@@ -13,42 +17,51 @@ use Slim\Exception\HttpNotFoundException;
 use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Handlers\ErrorHandler;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Log\LoggerInterface;
+use Slim\Interfaces\CallableResolverInterface;
 use Exception;
 use Throwable;
 
 class HttpErrorHandler extends ErrorHandler
 {
-    public const BAD_REQUEST = 'BAD_REQUEST';
-    public const INSUFFICIENT_PRIVILEGES = 'INSUFFICIENT_PRIVILEGES';
-    public const NOT_ALLOWED = 'NOT_ALLOWED';
-    public const NOT_IMPLEMENTED = 'NOT_IMPLEMENTED';
-    public const RESOURCE_NOT_FOUND = 'RESOURCE_NOT_FOUND';
-    public const SERVER_ERROR = 'SERVER_ERROR';
-    public const UNAUTHENTICATED = 'UNAUTHENTICATED';
+    protected const DEFAULT_TYPE = HttpErrorTypes::SERVER_ERROR;
+    protected const DEFAULT_STATUS_CODE = 500;
+    protected const DEFAULT_DESCRIPTION = 'An internal error has occurred while processing your request.';
     
+    public function __construct(
+        CallableResolverInterface $callableResolver,
+        ResponseFactoryInterface $responseFactory,
+        ?LoggerInterface $logger = null,
+        protected ?ErrorRendererInterface $errorRenderer = null,
+    ) {
+        parent::__construct($callableResolver, $responseFactory, $logger);
+        $this->errorRenderer = $errorRenderer ?? $this->getDefaultRenderer();
+    }
+
     protected function respond(): ResponseInterface
     {
         $exception = $this->exception;
-        $statusCode = 500;
-        $type = self::SERVER_ERROR;
-        $description = 'An internal error has occurred while processing your request.';
+        $statusCode = self::DEFAULT_STATUS_CODE;
+        $type = self::DEFAULT_TYPE;
+        $description = self::DEFAULT_DESCRIPTION;
 
         if ($exception instanceof HttpException) {
             $statusCode = $exception->getCode();
             $description = $exception->getMessage();
 
             if ($exception instanceof HttpNotFoundException) {
-                $type = self::RESOURCE_NOT_FOUND;
+                $type = HttpErrorTypes::RESOURCE_NOT_FOUND;
             } elseif ($exception instanceof HttpMethodNotAllowedException) {
-                $type = self::NOT_ALLOWED;
+                $type = HttpErrorTypes::NOT_ALLOWED;
             } elseif ($exception instanceof HttpUnauthorizedException) {
-                $type = self::UNAUTHENTICATED;
+                $type = HttpErrorTypes::UNAUTHENTICATED;
             } elseif ($exception instanceof HttpForbiddenException) {
-                $type = self::UNAUTHENTICATED;
+                $type = HttpErrorTypes::FORBIDDEN;
             } elseif ($exception instanceof HttpBadRequestException) {
-                $type = self::BAD_REQUEST;
+                $type = HttpErrorTypes::BAD_REQUEST;
             } elseif ($exception instanceof HttpNotImplementedException) {
-                $type = self::NOT_IMPLEMENTED;
+                $type = HttpErrorTypes::NOT_IMPLEMENTED;
             }
         }
 
@@ -60,19 +73,15 @@ class HttpErrorHandler extends ErrorHandler
             $description = $exception->getMessage();
         }
 
-        $error = [
-            'statusCode' => $statusCode,
-            'error' => [
-                'type' => $type,
-                'description' => $description,
-            ],
-        ];
-        
-        $payload = json_encode($error, JSON_PRETTY_PRINT);
-        
-        $response = $this->responseFactory->createResponse($statusCode);        
-        $response->getBody()->write($payload);
-        
+        $error = new HttpError($statusCode, $type, $description);
+
+        $response = $this->errorRenderer->generateResponseError($error);
         return $response;
+    }
+
+    protected function getDefaultRenderer(): ErrorRendererInterface
+    {
+        $responseFactory = $this->responseFactory;
+        return new JsonErrorRenderer($responseFactory);
     }
 }
