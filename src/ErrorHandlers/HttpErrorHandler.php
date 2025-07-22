@@ -73,6 +73,9 @@ class HttpErrorHandler extends ErrorHandler
             $description = $exception->getMessage();
         }
 
+        if ($this->logger) {
+            $this->logger->error($description);
+        }
         $error = new HttpError($statusCode, $type, $description);
 
         $response = $this->errorRenderer->generateResponseError($error);

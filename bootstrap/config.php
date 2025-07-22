@@ -17,6 +17,7 @@ define('APP_PATH', __DIR__ . '/..');
 define('SOURCE_PATH', __DIR__ . '/../src');
 define('ENTITY_PATH', SOURCE_PATH . '/entity');
 define('CACHE_PATH', APP_PATH . '/_cache');
+define('LOG_PATH', APP_PATH . '/logs');
 
 use Dotenv\Dotenv;
 
