@@ -4,6 +4,8 @@ declare(strict_types = 1);
 
 namespace App\ErrorHandlers;
 
+use App\ErrorHandlers\Logger\ErrorMapper;
+use Monolog\Logger;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Slim\Exception\HttpInternalServerErrorException;
 use Slim\ResponseEmitter;
@@ -17,6 +19,7 @@ class ShutdownHandler
         private Request $request,
         private HttpErrorHandler $errorHandler,
         private bool $displayErrorDetails,
+        private ?Logger $logger,
         private int $ignoreErrors = E_NOTICE | E_WARNING,
         private bool $ignoreErrorsOnDisplayDetails = false,
     ) { }
@@ -33,7 +36,11 @@ class ShutdownHandler
         $errorMessage = $error['message'];
         $errorType = $error['type'];
         $message = 'An error while processing your request. Please try again later.';
-        
+
+        $level = ErrorMapper::map($errorType);
+        $logMessage = $level->getName() . ": {$errorMessage}. on line {$errorLine} in file {$errorFile}";
+        $this->logger()?->log($level, $logMessage);
+
         if ((! $this->displayErrorDetails || $this->ignoreErrorsOnDisplayDetails)
                 && ($errorType & $this->ignoreErrors) === $errorType) {
             return;
@@ -62,7 +69,7 @@ class ShutdownHandler
         }
 
         $exception = new HttpInternalServerErrorException($this->request, $message);
-        $response = $this->errorHandler->__invoke($this->request, $exception, $this->displayErrorDetails, false, false);
+        $response = $this->errorHandler->__invoke($this->request, $exception, $this->displayErrorDetails, true, true);
         
         if (ob_get_length()) {
             ob_clean();
@@ -70,5 +77,10 @@ class ShutdownHandler
 
         $responseEmitter = new ResponseEmitter();
         $responseEmitter->emit($response);
+    }
+
+    private function logger(): ?Logger
+    {
+        return $this->logger;
     }
 }

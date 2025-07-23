@@ -28,7 +28,7 @@ class HttpErrorHandler extends ErrorHandler
     protected const DEFAULT_TYPE = HttpErrorTypes::SERVER_ERROR;
     protected const DEFAULT_STATUS_CODE = 500;
     protected const DEFAULT_DESCRIPTION = 'An internal error has occurred while processing your request.';
-    
+
     public function __construct(
         CallableResolverInterface $callableResolver,
         ResponseFactoryInterface $responseFactory,

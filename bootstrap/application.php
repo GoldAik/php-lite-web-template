@@ -28,7 +28,7 @@ $serverRequestCreator = ServerRequestCreatorFactory::create();
 $request = $serverRequestCreator->createServerRequestFromGlobals();
 
 $errorHandler = new HttpErrorHandler($callableResolver, $responseFactory, $logger);
-$shutdownHandler = new ShutdownHandler($request, $errorHandler, DEBUG_MODE);
+$shutdownHandler = new ShutdownHandler($request, $errorHandler, DEBUG_MODE, $logger);
 register_shutdown_function($shutdownHandler);
 
 $errorMiddleware = $app->addErrorMiddleware(
