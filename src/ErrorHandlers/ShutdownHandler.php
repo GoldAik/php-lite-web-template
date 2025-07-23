@@ -12,17 +12,45 @@ use Slim\ResponseEmitter;
 
 class ShutdownHandler
 {
-    /**
-     * ShutdownHandler constructor.
-     */
+    public const DISPLAY_ERROR_DETAILS = 1 << 0;
+    public const LOG_ERRORS = 1 << 1;
+    public const LOG_ERROR_DETAILS = 1 << 2;
+    public const IGNORE_ERRORS_ON_DISPLAY_DETAILS = 1 << 3;
+
+    private bool $displayErrorDetails;
+    private bool $logErrors;
+    private bool $logErrorDetails;
+    private bool $ignoreErrorsOnDisplayDetails;
+
     public function __construct(
         private Request $request,
         private HttpErrorHandler $errorHandler,
-        private bool $displayErrorDetails,
         private ?Logger $logger,
         private int $ignoreErrors = E_NOTICE | E_WARNING,
-        private bool $ignoreErrorsOnDisplayDetails = false,
-    ) { }
+        private int $flags = 0,
+    ) {
+        $this->ignoreErrorsOnDisplayDetails = ($this->flags & self::IGNORE_ERRORS_ON_DISPLAY_DETAILS) === self::IGNORE_ERRORS_ON_DISPLAY_DETAILS;
+        $this->logErrors = ($this->flags & self::LOG_ERRORS) === self::LOG_ERRORS;
+        $this->logErrorDetails = ($this->flags & self::LOG_ERROR_DETAILS) === self::LOG_ERROR_DETAILS;
+    }
+
+    public static function make(
+        Request $request,
+        HttpErrorHandler $errorHandler,
+        ?Logger $logger,
+        bool $debugMode = false,
+    ): self {
+        $flags = 0;
+
+        if ($debugMode) {
+            $flags |= self::DISPLAY_ERROR_DETAILS;
+        } else {
+            $flags |= self::LOG_ERRORS;
+            $flags |= self::LOG_ERROR_DETAILS;
+        }
+
+        return new self($request, $errorHandler, $logger, flags: $flags);
+    }
 
     public function __invoke()
     {        
@@ -37,9 +65,17 @@ class ShutdownHandler
         $errorType = $error['type'];
         $message = 'An error while processing your request. Please try again later.';
 
-        $level = ErrorMapper::map($errorType);
-        $logMessage = $level->getName() . ": {$errorMessage}. on line {$errorLine} in file {$errorFile}";
-        $this->logger()?->log($level, $logMessage);
+        if ($this->logErrors) {
+            $level = ErrorMapper::map($errorType);
+
+            $logMessage = $level->getName() . ': ' . $message;
+
+            if ($this->logErrorDetails) {
+                $logMessage = $level->getName() . ": {$errorMessage}. on line {$errorLine} in file {$errorFile}";
+            }
+
+            $this->logger()?->log($level, $logMessage);
+        }
 
         if ((! $this->displayErrorDetails || $this->ignoreErrorsOnDisplayDetails)
                 && ($errorType & $this->ignoreErrors) === $errorType) {
@@ -69,7 +105,7 @@ class ShutdownHandler
         }
 
         $exception = new HttpInternalServerErrorException($this->request, $message);
-        $response = $this->errorHandler->__invoke($this->request, $exception, $this->displayErrorDetails, true, true);
+        $response = $this->errorHandler->__invoke($this->request, $exception, $this->displayErrorDetails, false, false);
         
         if (ob_get_length()) {
             ob_clean();
@@ -82,5 +118,27 @@ class ShutdownHandler
     private function logger(): ?Logger
     {
         return $this->logger;
+    }
+
+    public function getFlags(): int
+    {
+        return $this->flags;
+    }
+
+    public function setFlags(int $flags): self
+    {
+        $this->flags = $flags;
+        return $this;
+    }
+
+    public function getIgnoreErrors(): int
+    {
+        return $this->ignoreErrors;
+    }
+
+    public function setIgnoreErrors(int $ignoreErrors): self
+    {
+        $this->ignoreErrors = $ignoreErrors;
+        return $this;
     }
 }
