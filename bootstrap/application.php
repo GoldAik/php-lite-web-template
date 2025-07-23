@@ -18,8 +18,8 @@ $app = \DI\Bridge\Slim\Bridge::create($container);
 
 $app->addRoutingMiddleware();
 
-$logger = new Logger('application');
-$logger->pushHandler(new RotatingFileHandler(LOG_PATH . '/application.log'));
+$errorHandlerLogger = (new Logger('error-handler'))->pushHandler(new RotatingFileHandler(LOG_PATH . '/error-handler.log'));
+$shutdownHandlerlogger = (new Logger('shutdown-handler'))->pushHandler(new RotatingFileHandler(LOG_PATH . '/shutdown-handler.log'));
 
 $callableResolver = $app->getCallableResolver();
 $responseFactory = $app->getResponseFactory();
@@ -27,8 +27,8 @@ $responseFactory = $app->getResponseFactory();
 $serverRequestCreator = ServerRequestCreatorFactory::create();
 $request = $serverRequestCreator->createServerRequestFromGlobals();
 
-$errorHandler = new HttpErrorHandler($callableResolver, $responseFactory, $logger);
-$shutdownHandler = new ShutdownHandler($request, $errorHandler, DEBUG_MODE, $logger);
+$errorHandler = new HttpErrorHandler($callableResolver, $responseFactory, $errorHandlerLogger);
+$shutdownHandler = new ShutdownHandler($request, $errorHandler, DEBUG_MODE, $shutdownHandlerlogger);
 register_shutdown_function($shutdownHandler);
 
 $errorMiddleware = $app->addErrorMiddleware(
