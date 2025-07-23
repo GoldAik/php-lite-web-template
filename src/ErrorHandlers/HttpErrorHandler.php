@@ -59,30 +59,23 @@ class HttpErrorHandler extends ErrorHandler
             $statusCode = $exception->getCode();
             $description = $exception->getMessage();
 
-            if ($exception instanceof HttpNotFoundException) {
-                $type = HttpErrorTypes::RESOURCE_NOT_FOUND;
-            } elseif ($exception instanceof HttpMethodNotAllowedException) {
-                $type = HttpErrorTypes::NOT_ALLOWED;
-            } elseif ($exception instanceof HttpUnauthorizedException) {
-                $type = HttpErrorTypes::UNAUTHENTICATED;
-            } elseif ($exception instanceof HttpForbiddenException) {
-                $type = HttpErrorTypes::FORBIDDEN;
-            } elseif ($exception instanceof HttpBadRequestException) {
-                $type = HttpErrorTypes::BAD_REQUEST;
-            } elseif ($exception instanceof HttpNotImplementedException) {
-                $type = HttpErrorTypes::NOT_IMPLEMENTED;
-            }
-        }
-
-        if (! ($exception instanceof HttpException)
-                && ($exception instanceof Exception || $exception instanceof Throwable)
-        ) {
+            $type = match (true) {
+                $exception instanceof HttpNotFoundException => HttpErrorTypes::RESOURCE_NOT_FOUND,
+                $exception instanceof HttpMethodNotAllowedException => HttpErrorTypes::NOT_ALLOWED,
+                $exception instanceof HttpUnauthorizedException => HttpErrorTypes::UNAUTHENTICATED,
+                $exception instanceof HttpForbiddenException => HttpErrorTypes::FORBIDDEN,
+                $exception instanceof HttpBadRequestException => HttpErrorTypes::BAD_REQUEST,
+                $exception instanceof HttpNotImplementedException => HttpErrorTypes::NOT_IMPLEMENTED,
+                default => $type,
+            };
+            
+        } elseif ($exception instanceof Exception || $exception instanceof Throwable) {
             $logLevel = ErrorMapper::map($exception->getCode()); 
 
             if ($this->displayErrorDetails) {
                 $description = $exception->getMessage();
             }
-        }
+        } 
 
         if ($this->logErrors) {
             $this->logger()?->log($logLevel, $logMessage);
