@@ -8,6 +8,9 @@ use App\ErrorHandlers\DTO\HttpError;
 use App\ErrorHandlers\Enums\HttpErrorTypes;
 use App\ErrorHandlers\ErrorRenderer\ErrorRendererInterface;
 use App\ErrorHandlers\ErrorRenderer\JsonErrorRenderer;
+use App\ErrorHandlers\Logger\ErrorMapper;
+use Monolog\Level;
+use Monolog\Logger;
 use Psr\Http\Message\ResponseInterface;
 use Slim\Exception\HttpBadRequestException;
 use Slim\Exception\HttpException;
@@ -20,15 +23,15 @@ use Slim\Handlers\ErrorHandler;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Log\LoggerInterface;
 use Slim\Interfaces\CallableResolverInterface;
-use Exception;
 use Throwable;
+use Exception;
 
 class HttpErrorHandler extends ErrorHandler
 {
     protected const DEFAULT_TYPE = HttpErrorTypes::SERVER_ERROR;
     protected const DEFAULT_STATUS_CODE = 500;
     protected const DEFAULT_DESCRIPTION = 'An internal error has occurred while processing your request.';
-
+    
     public function __construct(
         CallableResolverInterface $callableResolver,
         ResponseFactoryInterface $responseFactory,
@@ -45,6 +48,12 @@ class HttpErrorHandler extends ErrorHandler
         $statusCode = self::DEFAULT_STATUS_CODE;
         $type = self::DEFAULT_TYPE;
         $description = self::DEFAULT_DESCRIPTION;
+
+        $logLevel = Level::Error;
+        $logMessage = self::DEFAULT_DESCRIPTION;
+        if ($this->logErrorDetails) {
+            $logMessage = $exception->getMessage();
+        }
 
         if ($exception instanceof HttpException) {
             $statusCode = $exception->getCode();
@@ -65,17 +74,20 @@ class HttpErrorHandler extends ErrorHandler
             }
         }
 
-        if (
-            !($exception instanceof HttpException)
-            && ($exception instanceof Exception || $exception instanceof Throwable)
-            && $this->displayErrorDetails
+        if (! ($exception instanceof HttpException)
+                && ($exception instanceof Exception || $exception instanceof Throwable)
         ) {
-            $description = $exception->getMessage();
+            $logLevel = ErrorMapper::map($exception->getCode()); 
+
+            if ($this->displayErrorDetails) {
+                $description = $exception->getMessage();
+            }
         }
 
-        if ($this->logger) {
-            $this->logger->error($description);
+        if ($this->logErrors) {
+            $this->logger()?->log($logLevel, $logMessage);
         }
+
         $error = new HttpError($statusCode, $type, $description);
 
         $response = $this->errorRenderer->generateResponseError($error);
@@ -86,5 +98,10 @@ class HttpErrorHandler extends ErrorHandler
     {
         $responseFactory = $this->responseFactory;
         return new JsonErrorRenderer($responseFactory);
+    }
+
+    private function logger(): ?Logger
+    {
+        return $this->logger;
     }
 }
