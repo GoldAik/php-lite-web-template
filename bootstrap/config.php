@@ -15,7 +15,7 @@ ini_set("display_errors", (int) DEBUG_MODE);
 
 define('APP_PATH', __DIR__ . '/..');
 define('SOURCE_PATH', __DIR__ . '/../src');
-define('ENTITY_PATH', SOURCE_PATH . '/entity');
+define('ENTITY_PATH', SOURCE_PATH . '/Entity');
 define('CACHE_PATH', APP_PATH . '/_cache');
 define('LOG_PATH', APP_PATH . '/logs');
 

@@ -8,7 +8,7 @@ use Doctrine\ORM\EntityManager;
 use Slim\Routing\RouteCollectorProxy;
 use Psr\Http\Message\ResponseInterface as Response;
 
-use App\Entities\User;
+use App\Entity\User;
 
 return function (\Slim\App $app, EntityManager $entityManager, $args = []) {
     $app->group('/profile/{name}', function (RouteCollectorProxy $group) use ($entityManager, $args) {
