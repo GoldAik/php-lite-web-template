@@ -2,6 +2,7 @@
 
 declare(strict_types = 1);
 
+use App\Config;
 use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
 use Doctrine\Migrations\Configuration\Migration\PhpFile;
 use Doctrine\Migrations\DependencyFactory;
@@ -12,7 +13,7 @@ use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 /** @var \Slim\App $app */
 $app = require 'bootstrap.php';
 $container = $app->getContainer();
-$config = $container->get('config');
+$config = $container->get(Config::class);
 
 $entityManager     = $container->get(EntityManager::class);
 $dependencyFactory = DependencyFactory::fromEntityManager(

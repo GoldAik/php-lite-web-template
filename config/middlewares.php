@@ -2,6 +2,7 @@
 
 declare(strict_types = 1);
 
+use App\Config;
 use App\ErrorHandlers\HttpErrorHandler;
 use App\ErrorHandlers\ShutdownHandler;
 use Monolog\Handler\RotatingFileHandler;
@@ -10,7 +11,7 @@ use Slim\Factory\ServerRequestCreatorFactory;
 
 return function(\Slim\App $app) {
     $container = $app->getContainer();
-    $config = $container->get('config');
+    $config = $container->get(Config::class);
 
     $app->addRoutingMiddleware();
 

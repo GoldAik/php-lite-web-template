@@ -10,6 +10,7 @@ declare(strict_types = 1);
 error_reporting(E_ALL);
 ini_set("display_errors", 0);
 
+use App\Config;
 use Dotenv\Dotenv;
 
 require_once __DIR__ . '/vendor/autoload.php';
@@ -20,7 +21,7 @@ $env->load();
 
 $container = require CONFIG_PATH . '/container/container.php';
 $app       = \DI\Bridge\Slim\Bridge::create($container);
-$config    = $container->get('config'); 
+$config    = $container->get(Config::class); 
 
 ini_set("display_errors", (int) $config['debug_mode']);
 
