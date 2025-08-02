@@ -10,7 +10,10 @@ use Psr\Http\Message\ResponseInterface as Response;
 
 use App\Entity\User;
 
-return function (\Slim\App $app, EntityManager $entityManager, $args = []) {
+return function (\Slim\App $app, $args = []) {
+    $container = $app->getContainer();
+    $entityManager = $container->get(EntityManager::class);
+
     $app->group('/profile/{name}', function (RouteCollectorProxy $group) use ($entityManager, $args) {
         
         $group->get('', function (Response $response, $name) use ($entityManager) {

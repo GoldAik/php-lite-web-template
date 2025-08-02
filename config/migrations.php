@@ -12,7 +12,7 @@ return [
     ],
 
     'migrations_paths' => [
-        'Migrations' => '/migrations',
+        'Migrations' => '/../migrations',
     ],
 
     'all_or_nothing' => true,
