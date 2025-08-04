@@ -7,8 +7,10 @@ namespace App\Routes;
 use Doctrine\ORM\EntityManager;
 use Slim\Routing\RouteCollectorProxy;
 use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
 
 use App\Entity\User;
+use Slim\Views\Twig;
 
 return function (\Slim\App $app, $args = []) {
     $container = $app->getContainer();
@@ -16,20 +18,13 @@ return function (\Slim\App $app, $args = []) {
 
     $app->group('/profile/{name}', function (RouteCollectorProxy $group) use ($entityManager, $args) {
         
-        $group->get('', function (Response $response, $name) use ($entityManager) {
+        $group->get('', function (Request $request, Response $response, $name) use ($entityManager) {
             $user = $entityManager->getRepository(User::class)->findOneBy(['username' => $name]);
 
-            if (!$user) {
-                $response->getBody()->write('There is no such profile');
-                return $response;
-            }
+            $userData = $user?->getData() ?? [];
 
-            $response->getBody()->write("Welcome on profile $name <br>");
-            $response->getBody()->write(nl2br(json_encode($user->getData(), JSON_PRETTY_PRINT)));
-
-            return $response;
-            $response->getBody()->write("profile page - $name");
-            return $response;
+            $twig = Twig::fromRequest($request);
+            return $twig->render($response, 'profile.html.twig', ['user' => $userData]);
         });
 
 

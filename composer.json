@@ -1,15 +1,16 @@
 {
     "require": {
         "php": "^8.2",
-        "slim/slim": "^4.2",
-        "slim/psr7": "^1.7",
-        "php-di/slim-bridge": "^3.4",
-        "vlucas/phpdotenv": "^5.6",
-        "doctrine/orm": "^3.5",
         "doctrine/dbal": "^4.3",
-        "symfony/cache": "^7.3",
+        "doctrine/migrations": "^3.9",
+        "doctrine/orm": "^3.5",
         "monolog/monolog": "^3.9",
-        "doctrine/migrations": "^3.9"
+        "php-di/slim-bridge": "^3.4",
+        "slim/psr7": "^1.7",
+        "slim/slim": "^4.2",
+        "slim/twig-view": "^3.4",
+        "symfony/cache": "^7.3",
+        "vlucas/phpdotenv": "^5.6"
     },
 
     "autoload": {
