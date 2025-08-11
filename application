@@ -9,6 +9,7 @@ use Doctrine\Migrations\DependencyFactory;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Tools\Console\ConsoleRunner;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
+use Symfony\Component\Console\Application;
 
 /** @var \Slim\App $app */
 $app = require 'bootstrap.php';
@@ -21,8 +22,10 @@ $dependencyFactory = DependencyFactory::fromEntityManager(
     new ExistingEntityManager($entityManager)
 );
 
-$commands = require_once CONFIG_PATH . '/cli-commands/doctrine.php';
+$commands = require_once CONFIG_PATH . '/cli-commands/main.php';
 
-$cli = ConsoleRunner::createApplication(new SingleManagerProvider($entityManager));
+$cli = new Application($config['app_name'], $config['app_version']);
+ConsoleRunner::addCommands($cli, new SingleManagerProvider($entityManager));
+
 $cli->addCommands($commands($dependencyFactory));
 $cli->run();
