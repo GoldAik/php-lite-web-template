@@ -5,6 +5,7 @@ declare(strict_types = 1);
 use App\Config;
 use App\ErrorHandlers\HttpErrorHandler;
 use App\ErrorHandlers\ShutdownHandler;
+use App\Middlewares\SessionStartMiddleware;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Slim\Factory\ServerRequestCreatorFactory;
@@ -18,6 +19,8 @@ return function(\Slim\App $app) {
     $app->add(TwigMiddleware::create($app, $container->get(Twig::class)));
 
     $app->addRoutingMiddleware();
+
+    $app->add(SessionStartMiddleware::class);
 
     $errorHandlerLogger = (new Logger('error-handler'))->pushHandler(new RotatingFileHandler(LOG_PATH . '/error-handler.log'));
     $shutdownHandlerlogger = (new Logger('shutdown-handler'))->pushHandler(new RotatingFileHandler(LOG_PATH . '/shutdown-handler.log'));

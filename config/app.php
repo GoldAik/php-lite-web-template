@@ -3,6 +3,7 @@
 declare(strict_types = 1);
 
 $debugMode = (bool) ($_ENV['DEBUG_MODE'] ?? 0);
+$sessionName = preg_replace('/[^a-zA-Z0-9_]/', '_', $_ENV['APP_NAME']);
 
 return [
     'app_name'              => $_ENV['APP_NAME'],
@@ -28,5 +29,14 @@ return [
         'debug_mode' => $debugMode,
         'auto_load'  => $debugMode,
         'cache_dir'  => CACHE_PATH . '/twig',
+    ],
+    'session'               => [
+        'name'        => $sessionName,
+        'lifetime'   => 60 * 60 * 2,
+        'path'        => '/',  
+        'secure'      => true,
+        'http_only'   => true,
+        'same_site'   => 'lax',
+        'storage_dir' => null, // Null indicates default storage directory
     ],
 ];
