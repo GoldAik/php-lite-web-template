@@ -45,46 +45,91 @@ class HttpErrorHandler extends ErrorHandler
     protected function respond(): ResponseInterface
     {
         $exception = $this->exception;
-        $statusCode = self::DEFAULT_STATUS_CODE;
-        $type = self::DEFAULT_TYPE;
-        $description = self::DEFAULT_DESCRIPTION;
 
-        $logLevel = Level::Error;
-        $logMessage = self::DEFAULT_DESCRIPTION;
-        if ($this->logErrorDetails) {
-            $logMessage = $exception->getMessage();
-        }
+        $statusCode = $this->getStatusCode($exception, self::DEFAULT_STATUS_CODE);
+        $type = $this->getErrorType($exception, self::DEFAULT_TYPE);
+        $description = $this->getErrorDescription($exception, self::DEFAULT_DESCRIPTION);
+
+        ['level' => $logLevel, 'message' => $logMessage] = $this->getLogLevelAndMessage($exception, Level::Error, self::DEFAULT_DESCRIPTION);
+
+        $this->logIfEnabled($logLevel, $logMessage);
+
+        $error = new HttpError($statusCode, $type, $description);
+
+        $response = $this->errorRenderer->generateResponseError($error);
+        return $response;
+    }
+
+    protected function getStatusCode(Throwable $exception, ?int $defaultStatusCode = null): int
+    {
+        $defaultStatusCode ??= self::DEFAULT_STATUS_CODE;
 
         if ($exception instanceof HttpException) {
-            $statusCode = $exception->getCode();
-            $description = $exception->getMessage();
+            return $exception->getCode();
+        }
 
-            $type = match (true) {
+        return $defaultStatusCode;
+    }
+
+    protected function determineHttpErrorType(Throwable $exception, ?HttpErrorTypes $defaultErrorType = null): HttpErrorTypes
+    {
+        $defaultErrorType ??= self::DEFAULT_TYPE;
+
+        if ($exception instanceof HttpException) {
+            return match (true) {
                 $exception instanceof HttpNotFoundException => HttpErrorTypes::RESOURCE_NOT_FOUND,
                 $exception instanceof HttpMethodNotAllowedException => HttpErrorTypes::NOT_ALLOWED,
                 $exception instanceof HttpUnauthorizedException => HttpErrorTypes::UNAUTHENTICATED,
                 $exception instanceof HttpForbiddenException => HttpErrorTypes::FORBIDDEN,
                 $exception instanceof HttpBadRequestException => HttpErrorTypes::BAD_REQUEST,
                 $exception instanceof HttpNotImplementedException => HttpErrorTypes::NOT_IMPLEMENTED,
-                default => $type,
+                default => $defaultErrorType,
             };
-            
-        } elseif ($exception instanceof Exception || $exception instanceof Throwable) {
-            $logLevel = ErrorMapper::map($exception->getCode()); 
+        }
+        return $defaultErrorType;
+    }
 
-            if ($this->displayErrorDetails) {
-                $description = $exception->getMessage();
-            }
-        } 
+    protected function getErrorType(Throwable $exception, ?HttpErrorTypes $defaultErrorType = null): HttpErrorTypes
+    {
+        $defaultErrorType ??= self::DEFAULT_TYPE;
 
+        if ($exception instanceof HttpException) {
+            return $this->determineHttpErrorType($exception, $defaultErrorType);
+        }
+        return $defaultErrorType;
+    }
+
+    protected function getErrorDescription(Throwable $exception, ?string $defaultDescription = null): string
+    {
+        $defaultDescription ??= self::DEFAULT_DESCRIPTION;
+
+        if ($this->displayErrorDetails || $exception instanceof HttpException) {
+            return $exception->getMessage();
+        }
+        return $defaultDescription;
+    }
+
+    protected function getLogLevelAndMessage(Throwable $exception, Level $defaultLevel = Level::Error, ?string $defaultMessage = null): array
+    {
+        $level = $defaultLevel;
+        $message = $defaultMessage ?? self::DEFAULT_DESCRIPTION;
+
+        if ($this->logErrorDetails) {
+            $message = $exception->getMessage();
+        }
+
+        if ($exception instanceof Exception || $exception instanceof Throwable) {
+            $level = ErrorMapper::map($exception->getCode());
+        }
+
+        return ['level' => $level, 'message' => $message];
+    }
+
+    protected function logIfEnabled(Level $logLevel, string $logMessage): void
+    {
         if ($this->logErrors) {
             $this->logger()?->log($logLevel, $logMessage);
         }
-
-        $error = new HttpError($statusCode, $type, $description);
-
-        $response = $this->errorRenderer->generateResponseError($error);
-        return $response;
     }
 
     protected function getDefaultRenderer(): ErrorRendererInterface
