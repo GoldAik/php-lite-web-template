@@ -118,7 +118,7 @@ class HttpErrorHandler extends ErrorHandler
             $message = $exception->getMessage();
         }
 
-        if ($exception instanceof Exception || $exception instanceof Throwable) {
+        if (! $exception instanceof HttpException && ($exception instanceof Exception || $exception instanceof Throwable)) {
             $level = ErrorMapper::map($exception->getCode());
         }
 
