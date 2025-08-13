@@ -5,22 +5,27 @@ declare(strict_types = 1);
 namespace App\Session;
 
 use App\Session\DTO\Options;
+use App\Session\Global\SessionGlobalFunctions;
+use App\Session\Global\SessionGlobalFunctionsInterface;
 
 class Session implements SessionInterface
 {
-    public function __construct(protected readonly Options $options) { }
+    public function __construct(
+        protected readonly Options $options,
+        protected readonly SessionGlobalFunctionsInterface $functions = new SessionGlobalFunctions(),
+    ) { }
 
     public function start(): void
     {
-        if (session_status() == PHP_SESSION_ACTIVE) {
+        if ($this->functions->sessionStatus() === PHP_SESSION_ACTIVE) {
             throw new \RuntimeException('Session has already been started');
         }
 
-        if (headers_sent($filename, $line)) {
+        if ($this->functions->headersSent($filename, $line)) {
             throw new \RuntimeException('Headers already sent');
         }
 
-        session_set_cookie_params([
+        $this->functions->sessionSetCookieParams([
             'lifetime' => $this->options->lifetime,
             'path'     => $this->options->path,
             'secure'   => $this->options->secure,
@@ -28,19 +33,19 @@ class Session implements SessionInterface
             'samesite' => $this->options->sameSite->value,
         ]);
 
-        session_save_path($this->options->storagePath);
+        $this->functions->sessionSavePath($this->options->storagePath);
 
-        session_start();
+        $this->functions->sessionStart();
     }
 
     public function save(): void
     {
-        session_write_close();
+        $this->functions->sessionWriteClose();
     }
 
     public function regenerate(bool $deleteOld = false): bool
     {
-        return session_regenerate_id($deleteOld);
+        return $this->functions->sessionRegenerateId($deleteOld);
     }
 
     public function get(string $key, mixed $default = null): mixed
