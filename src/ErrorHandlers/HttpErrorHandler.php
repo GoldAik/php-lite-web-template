@@ -26,12 +26,39 @@ use Slim\Interfaces\CallableResolverInterface;
 use Throwable;
 use Exception;
 
+/**
+ * Class HttpErrorHandler
+ * 
+ * Handles HTTP errors and exceptions, generating appropriate responses with error details.
+ * Extends Slim's ErrorHandler to customize error response logic.
+ * 
+ * @package App\ErrorHandlers
+ */
 class HttpErrorHandler extends ErrorHandler
 {
+    /**
+     * Default error type for server errors.
+     */
     protected const DEFAULT_TYPE = HttpErrorTypes::SERVER_ERROR;
+
+    /**
+     * Default HTTP status code for errors.
+     */
     protected const DEFAULT_STATUS_CODE = 500;
+
+    /**
+     * Default error description message.
+     */
     protected const DEFAULT_DESCRIPTION = 'An internal error has occurred while processing your request.';
-    
+
+    /**
+     * Constructor.
+     * 
+     * @param CallableResolverInterface $callableResolver Slim's callable resolver.
+     * @param ResponseFactoryInterface $responseFactory Factory to create responses.
+     * @param LoggerInterface|null $logger Optional logger instance.
+     * @param ErrorRendererInterface|null $errorRenderer Optional custom error renderer. Defaults to JSON renderer.
+     */
     public function __construct(
         CallableResolverInterface $callableResolver,
         ResponseFactoryInterface $responseFactory,
@@ -42,6 +69,11 @@ class HttpErrorHandler extends ErrorHandler
         $this->errorRenderer = $errorRenderer ?? $this->getDefaultRenderer();
     }
 
+    /**
+     * Generates the error response based on the exception.
+     * 
+     * @return ResponseInterface The HTTP response containing error details.
+     */
     protected function respond(): ResponseInterface
     {
         $exception = $this->exception;
@@ -60,6 +92,13 @@ class HttpErrorHandler extends ErrorHandler
         return $response;
     }
 
+    /**
+     * Determines the HTTP status code from the exception.
+     * 
+     * @param Throwable $exception The thrown exception.
+     * @param int|null $defaultStatusCode Default if none found.
+     * @return int The HTTP status code.
+     */
     protected function getStatusCode(Throwable $exception, ?int $defaultStatusCode = null): int
     {
         $defaultStatusCode ??= self::DEFAULT_STATUS_CODE;
@@ -71,6 +110,13 @@ class HttpErrorHandler extends ErrorHandler
         return $defaultStatusCode;
     }
 
+    /**
+     * Determines the error type based on the exception.
+     * 
+     * @param Throwable $exception The thrown exception.
+     * @param HttpErrorTypes|null $defaultErrorType Default error type.
+     * @return HttpErrorTypes The determined error type.
+     */
     protected function determineHttpErrorType(Throwable $exception, ?HttpErrorTypes $defaultErrorType = null): HttpErrorTypes
     {
         $defaultErrorType ??= self::DEFAULT_TYPE;
@@ -89,6 +135,13 @@ class HttpErrorHandler extends ErrorHandler
         return $defaultErrorType;
     }
 
+    /**
+     * Retrieves the error type for the exception.
+     * 
+     * @param Throwable $exception The thrown exception.
+     * @param HttpErrorTypes|null $defaultErrorType Default error type.
+     * @return HttpErrorTypes The error type.
+     */
     protected function getErrorType(Throwable $exception, ?HttpErrorTypes $defaultErrorType = null): HttpErrorTypes
     {
         $defaultErrorType ??= self::DEFAULT_TYPE;
@@ -99,6 +152,13 @@ class HttpErrorHandler extends ErrorHandler
         return $defaultErrorType;
     }
 
+    /**
+     * Gets the error description message.
+     * 
+     * @param Throwable $exception The thrown exception.
+     * @param string|null $defaultDescription Default description message.
+     * @return string The error description.
+     */
     protected function getErrorDescription(Throwable $exception, ?string $defaultDescription = null): string
     {
         $defaultDescription ??= self::DEFAULT_DESCRIPTION;
@@ -109,6 +169,14 @@ class HttpErrorHandler extends ErrorHandler
         return $defaultDescription;
     }
 
+    /**
+     * Gets the log level and message for the exception.
+     * 
+     * @param Throwable $exception The thrown exception.
+     * @param Level $defaultLevel Default log level.
+     * @param string|null $defaultMessage Default log message.
+     * @return array Associative array with 'level' and 'message'.
+     */
     protected function getLogLevelAndMessage(Throwable $exception, Level $defaultLevel = Level::Error, ?string $defaultMessage = null): array
     {
         $level = $defaultLevel;
@@ -125,6 +193,12 @@ class HttpErrorHandler extends ErrorHandler
         return ['level' => $level, 'message' => $message];
     }
 
+    /**
+     * Logs the error if logging is enabled.
+     * 
+     * @param Level $logLevel The log level.
+     * @param string $logMessage The message to log.
+     */
     protected function logIfEnabled(Level $logLevel, string $logMessage): void
     {
         if ($this->logErrors) {
@@ -132,12 +206,22 @@ class HttpErrorHandler extends ErrorHandler
         }
     }
 
+    /**
+     * Provides the default error renderer (JSON).
+     * 
+     * @return ErrorRendererInterface The default error renderer.
+     */
     protected function getDefaultRenderer(): ErrorRendererInterface
     {
         $responseFactory = $this->responseFactory;
         return new JsonErrorRenderer($responseFactory);
     }
 
+    /**
+     * Retrieves the logger instance if available.
+     * 
+     * @return Logger|null The logger instance.
+     */
     private function logger(): ?Logger
     {
         return $this->logger;
