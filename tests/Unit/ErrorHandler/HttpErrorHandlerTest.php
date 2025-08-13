@@ -31,6 +31,7 @@ use Slim\Exception\HttpNotImplementedException;
 use Slim\Exception\HttpSpecializedException;
 use Slim\Exception\HttpUnauthorizedException;
 use Slim\Interfaces\CallableResolverInterface;
+use Test\Unit\TestHelper;
 use Throwable;
 
 class TestableHttpErrorHandler extends HttpErrorHandler
@@ -101,14 +102,14 @@ class HttpErrorHandlerTest extends TestCase
             $errorRenderer
         );
 
-        $this->assertSame($callableResolver, $this->getProperty($errorHandler, 'callableResolver'));
-        $this->assertSame($responseFactory, $this->getProperty($errorHandler, 'responseFactory'));
+        $this->assertSame($callableResolver, TestHelper::getProperty($errorHandler, 'callableResolver'));
+        $this->assertSame($responseFactory, TestHelper::getProperty($errorHandler, 'responseFactory'));
 
         if ($logger !== null) {
-            $this->assertSame($logger, $this->getProperty($errorHandler, 'logger'));
+            $this->assertSame($logger, TestHelper::getProperty($errorHandler, 'logger'));
         }
 
-        $errorRendererProperty = $this->getProperty($errorHandler, 'errorRenderer');
+        $errorRendererProperty = TestHelper::getProperty($errorHandler, 'errorRenderer');
         $this->assertInstanceOf(ErrorRendererInterface::class, $errorRendererProperty);
 
         if ($errorRenderer !== null) {
