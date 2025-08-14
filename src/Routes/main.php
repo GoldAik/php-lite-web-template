@@ -4,9 +4,6 @@ declare(strict_types = 1);
 
 namespace App\Routes;
 
-use Doctrine\ORM\EntityManager;
-
-
 return function (\Slim\App $app, $args = []) {    
     /**
      * Declaring routes
