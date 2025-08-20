@@ -4,7 +4,7 @@ declare(strict_types = 1);
 
 namespace App\Routes;
 
-use Doctrine\ORM\EntityManager;
+use App\Config;
 
 
 return function (\Slim\App $app, $args = []) {    
@@ -17,6 +17,11 @@ return function (\Slim\App $app, $args = []) {
     /**
      * Caching routes
      */
+$container = $app->getContainer();
+    $debugMode = $container->get(Config::class)['debug_mode'];
+
+    if (! $debugMode) {
     $routeCollector = $app->getRouteCollector();
     $routeCollector->setCacheFile(CACHE_PATH . '/routes.file');
+}
 };
