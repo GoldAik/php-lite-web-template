@@ -18,6 +18,7 @@ class PathConstantsTest extends TestCase
         'CACHE_PATH',
         'LOG_PATH',
         'CONFIG_PATH',
+        'TEMPLETE_PATH',
     ];
 
     public function testPathConstantFileExist(): void
