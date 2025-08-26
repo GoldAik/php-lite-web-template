@@ -25,11 +25,6 @@ return [
             'password' => $_ENV['DATABASE_PASSWORD'],
         ],
     ],
-    'twig'                  => [
-        'debug_mode' => $debugMode,
-        'auto_load'  => $debugMode,
-        'cache_dir'  => CACHE_PATH . '/twig',
-    ],
     'session'               => [
         'name'        => $sessionName,
         'lifetime'   => 60 * 60 * 2,

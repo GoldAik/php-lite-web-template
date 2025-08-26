@@ -9,14 +9,10 @@ use App\Middlewares\SessionStartMiddleware;
 use Monolog\Handler\RotatingFileHandler;
 use Monolog\Logger;
 use Slim\Factory\ServerRequestCreatorFactory;
-use Slim\Views\Twig;
-use Slim\Views\TwigMiddleware;
 
 return function(\Slim\App $app) {
     $container = $app->getContainer();
     $config = $container->get(Config::class);
-
-    $app->add(TwigMiddleware::create($app, $container->get(Twig::class)));
 
     $app->addRoutingMiddleware();
 

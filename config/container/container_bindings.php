@@ -13,7 +13,6 @@ use Doctrine\ORM\ORMSetup;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Container\ContainerInterface;
 use Slim\Psr7\Factory\ResponseFactory;
-use Slim\Views\Twig;
 
 use function DI\create;
 
@@ -25,13 +24,6 @@ return [
             $config['doctrine']['entity_dir'] ?? [],
             $config['doctrine']['dev_mode'] ?? false
         )
-    ),
-    Twig::class                     => fn (Config $config) => Twig::create(
-        TEMPLETE_PATH, [
-            'debug' => $config['twig']['debug_mode'],
-            'cache' => $config['twig']['cache_dir'],
-            'auto_load' => $config['twig']['auto_load'],
-        ]
     ),
     Session::class                  => fn (Config $config) => new Session(
         new SessionOptions(
