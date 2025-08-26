@@ -1,6 +1,5 @@
 /vendor
 /.vscode
-composer.lock
 .env
 /_cache
 /logs
