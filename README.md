@@ -8,9 +8,9 @@ The goal of the project is to provide a simple and flexible tool for developers,
 
 > **Note:** The implementation is not yet fully tested and may require additional configuration or adjustments. It is recommended to thoroughly review the code before deploying in a production environment. Particular attention should be paid to custom error handling and session solutions.
 
-Based on this project (Slim + PHP-DI), there are also plans to extend with implementations of [Doctrine ORM](https://www.doctrine-project.org/) and [Twig](https://twig.symfony.com/). Currently, their implementation is on the [development](https://github.com/GoldAik/php-lite-web-template/tree/development) branch.
+Based on this project (Slim + PHP-DI), there are extended implementations with [Doctrine](https://www.doctrine-project.org/) and [Twig](https://twig.symfony.com/).
 
-Future plans also include adding:
+Future plans include adding:
 - support for [Redis](https://redis.io/)
 - REST API
 - error notifications via email
@@ -30,13 +30,11 @@ Please also report any bugs or issues related to error handling and sessions to 
 
 #### The project includes various implementations based on the core (Slim + PHP-DI), with implementations located on different branches:
 - `main` — project overview (current branch) [Go to main](https://github.com/GoldAik/php-lite-web-template/tree/main)
-- `slim+php-di` — basic configuration of Slim + PHP-DI [Go to slim+php-di](https://github.com/GoldAik/php-lite-web-template/tree/slim+php-di)
 - `development` — branch where development occurs [Go to development](https://github.com/GoldAik/php-lite-web-template/tree/development)
-
-##### (currently unavailable)
-- `slim-php-di-doctrine` — Slim + PHP-DI + Doctrine ORM
-- `slim-php-di-twig` — Slim + PHP-DI + Twig
-- `slim-php-di-doctrine-twig` — Slim + PHP-DI + Doctrine ORM + Twig
+- `slim+php-di` — basic configuration of Slim + PHP-DI [Go to slim+php-di](https://github.com/GoldAik/php-lite-web-template/tree/slim+php-di)
+- `slim+php-di+twig` — Slim + PHP-DI + Twig [Go to slim+php-di+twig](https://github.com/GoldAik/php-lite-web-template/tree/slim+php-di+twig)
+- `slim+php-di+doctrine` — Slim + PHP-DI + Doctrine [Go to slim+php-di+doctrine](https://github.com/GoldAik/php-lite-web-template/tree/slim+php-di+doctrine)
+- `slim+php-di+doctrine+twig` — Slim + PHP-DI + Doctrine + Twig [Go to slim+php-di+doctrine+twig](https://github.com/GoldAik/php-lite-web-template/tree/slim+php-di+doctrine+twig)
 
 #### Folder and file structure
 
