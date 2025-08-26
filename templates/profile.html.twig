@@ -6,20 +6,6 @@
     <title>Profile</title>
 </head>
 <body>
-
-    {% if not user %}
-        There is no such profile
-    {% endif %}
-
-    {% if user %}
-        Welcome on profile {{user.username}} <br>
-
-        id: {{user.id}}<br>
-        username: {{user.username}}<br>
-        email: {{user.email}}<br>
-        password hash: {{user.passwordHash}}<br>
-
-    {% endif %}
-
+    <h1>Hello {{name}}</h1>
 </body>
 </html>

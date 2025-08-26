@@ -3,12 +3,6 @@
 declare(strict_types = 1);
 
 use App\Config;
-use Doctrine\Migrations\Configuration\EntityManager\ExistingEntityManager;
-use Doctrine\Migrations\Configuration\Migration\PhpFile;
-use Doctrine\Migrations\DependencyFactory;
-use Doctrine\ORM\EntityManager;
-use Doctrine\ORM\Tools\Console\ConsoleRunner;
-use Doctrine\ORM\Tools\Console\EntityManagerProvider\SingleManagerProvider;
 use Symfony\Component\Console\Application;
 
 /** @var \Slim\App $app */
@@ -16,16 +10,8 @@ $app = require 'bootstrap.php';
 $container = $app->getContainer();
 $config = $container->get(Config::class);
 
-$entityManager     = $container->get(EntityManager::class);
-$dependencyFactory = DependencyFactory::fromEntityManager(
-    new PhpFile(CONFIG_PATH . '/migrations.php'),
-    new ExistingEntityManager($entityManager)
-);
-
 $commands = require_once CONFIG_PATH . '/cli-commands/main.php';
 
 $cli = new Application($config['app_name'], $config['app_version']);
-ConsoleRunner::addCommands($cli, new SingleManagerProvider($entityManager));
-
-$cli->addCommands($commands($dependencyFactory));
+$cli->addCommands($commands);
 $cli->run();
